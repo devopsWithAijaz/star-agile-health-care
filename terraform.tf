@@ -112,7 +112,7 @@ resource "aws_security_group" "proj-sg" {
 # Creating a new network interface
 resource "aws_network_interface" "proj-ni" {
  subnet_id = aws_subnet.proj-subnet.id
- private_ips = ["10.0.1.11"]
+ private_ips = ["10.0.1.10"]
  security_groups = [aws_security_group.proj-sg.id]
 }
 
@@ -120,12 +120,12 @@ resource "aws_network_interface" "proj-ni" {
 resource "aws_eip" "proj-eip" {
  vpc = true
  network_interface = aws_network_interface.proj-ni.id
- associate_with_private_ip = "10.0.1.11"
+ associate_with_private_ip = "10.0.1.10"
 }
 
 
 # Creating an ubuntu EC2 instance
-resource "aws_instance" "Health-Prod-Server" {
+resource "aws_instance" "Prod-Server" {
  ami = "ami-0ef82eeba2c7a0eeb"
  instance_type = "t2.micro"
  availability_zone = "ap-south-1b"
