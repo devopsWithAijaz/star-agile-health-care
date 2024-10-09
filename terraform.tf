@@ -119,7 +119,7 @@ resource "aws_network_interface" "proj-ni-health" {
 # Attaching an elastic IP to the network interface
 resource "aws_eip" "proj-eip-health" {
  vpc = true
- network_interface = aws_network_interface.proj-ni.id
+ network_interface = aws_network_interface.proj-ni-health.id
  associate_with_private_ip = "10.0.1.11"
 }
 
