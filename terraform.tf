@@ -13,29 +13,29 @@ provider "aws" {
   region = "ap-south-1"
 }
 # Creating a VPC
-resource "aws_vpc" "proj-vpc" {
+resource "aws_vpc" "proj-vpc-health" {
  cidr_block = "10.0.0.0/16"
 }
 
 # Create an Internet Gateway
-resource "aws_internet_gateway" "proj-ig" {
- vpc_id = aws_vpc.proj-vpc.id
+resource "aws_internet_gateway" "proj-ig-health" {
+ vpc_id = aws_vpc.proj-vpc-health.id
  tags = {
  Name = "gateway1"
  }
 }
 
 # Setting up the route table
-resource "aws_route_table" "proj-rt" {
- vpc_id = aws_vpc.proj-vpc.id
+resource "aws_route_table" "proj-rt-health" {
+ vpc_id = aws_vpc.proj-vpc-health.id
  route {
  # pointing to the internet
  cidr_block = "0.0.0.0/0"
- gateway_id = aws_internet_gateway.proj-ig.id
+ gateway_id = aws_internet_gateway.proj-ig-health.id
  }
  route {
  ipv6_cidr_block = "::/0"
- gateway_id = aws_internet_gateway.proj-ig.id
+ gateway_id = aws_internet_gateway.proj-ig-health.id
  }
  tags = {
  Name = "rt1"
@@ -43,8 +43,8 @@ resource "aws_route_table" "proj-rt" {
 }
 
 # Setting up the subnet
-resource "aws_subnet" "proj-subnet" {
- vpc_id = aws_vpc.proj-vpc.id
+resource "aws_subnet" "proj-subnet-health" {
+ vpc_id = aws_vpc.proj-vpc-health.id
  cidr_block = "10.0.1.0/24"
  availability_zone = "ap-south-1b"
  tags = {
@@ -53,16 +53,16 @@ resource "aws_subnet" "proj-subnet" {
 }
 
 # Associating the subnet with the route table
-resource "aws_route_table_association" "proj-rt-sub-assoc" {
-subnet_id = aws_subnet.proj-subnet.id
-route_table_id = aws_route_table.proj-rt.id
+resource "aws_route_table_association" "proj-rt-sub-assoc-health" {
+subnet_id = aws_subnet.proj-subnet-health.id
+route_table_id = aws_route_table.proj-rt-health.id
 }
 
 # Creating a Security Group
-resource "aws_security_group" "proj-sg" {
- name = "proj-sg"
+resource "aws_security_group" "proj-sg-health" {
+ name = "proj-sg-health"
  description = "Enable web traffic for the project"
- vpc_id = aws_vpc.proj-vpc.id
+ vpc_id = aws_vpc.proj-vpc-health.id
  ingress {
     from_port   = 0
     to_port     = 0
@@ -110,35 +110,35 @@ resource "aws_security_group" "proj-sg" {
 }
 
 # Creating a new network interface
-resource "aws_network_interface" "proj-ni" {
- subnet_id = aws_subnet.proj-subnet.id
- private_ips = ["10.0.1.10"]
- security_groups = [aws_security_group.proj-sg.id]
+resource "aws_network_interface" "proj-ni-health" {
+ subnet_id = aws_subnet.proj-subnet-health.id
+ private_ips = ["10.0.1.11"]
+ security_groups = [aws_security_group.proj-sg-health.id]
 }
 
 # Attaching an elastic IP to the network interface
-resource "aws_eip" "proj-eip" {
+resource "aws_eip" "proj-eip-health" {
  vpc = true
  network_interface = aws_network_interface.proj-ni.id
- associate_with_private_ip = "10.0.1.10"
+ associate_with_private_ip = "10.0.1.11"
 }
 
 
 # Creating an ubuntu EC2 instance
-resource "aws_instance" "Prod-Server" {
+resource "aws_instance" "Health-Prod-Server" {
  ami = "ami-0ef82eeba2c7a0eeb"
  instance_type = "t2.micro"
  availability_zone = "ap-south-1b"
  key_name = "bank"
  network_interface {
  device_index = 0
- network_interface_id = aws_network_interface.proj-ni.id
+ network_interface_id = aws_network_interface.proj-ni-health.id
  }
  user_data  = <<-EOF
  #!/bin/bash
      sudo apt-get update -y
  EOF
  tags = {
- Name = "Prod-Server"
+ Name = "Health-Prod-Server"
  }
 }
